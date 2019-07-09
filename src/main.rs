@@ -80,23 +80,21 @@ enum Instruction {
     GetChar,
     Begin,
     End,
-    None,
-
+    Etc,
 }
 
-struct Interpreter{
-    memory: [u8; 512],
+struct Interpreter {
+    memory: [i32; 30000],
     pointer: usize,
     index: usize,
     instructions: Vec<Instruction>,
 }
 
-impl Interpreter{
-
-    fn new(input: &str) -> Self{
+impl Interpreter {
+    fn new(input: &str) -> Self {
         let mut process: Vec<Instruction> = Vec::new();
-        for i in input.chars(){
-            match i{
+        for i in input.chars() {
+            match i {
                 '+' => process.push(Instruction::Increment),
                 '-' => process.push(Instruction::Decrement),
                 '>' => process.push(Instruction::PointerIncrement),
@@ -105,46 +103,47 @@ impl Interpreter{
                 ',' => process.push(Instruction::GetChar),
                 '[' => process.push(Instruction::Begin),
                 ']' => process.push(Instruction::End),
-                _ => process.push(Instruction::None),
+                _ => process.push(Instruction::Etc),
             }
         }
-        Interpreter{
-            memory: [0; 512],
+        Interpreter {
+            memory: [0; 30000],
             pointer: 0,
             index: 0,
             instructions: process,
         }
     }
 
-    fn run(&mut self) -> (){
-        while self.index < self.instructions.len(){
+    fn run(&mut self) -> () {
+        while self.index < self.instructions.len() {
             let inst = self.instructions[self.index];
             self.execute(inst);
             self.index += 1;
         }
     }
 
-    fn execute(&mut self, instruction: Instruction){
+    fn execute(&mut self, instruction: Instruction) {
         match instruction {
             Instruction::Increment => self.memory[self.pointer] += 1,
             Instruction::Decrement => self.memory[self.pointer] -= 1,
             Instruction::PointerIncrement => self.pointer += 1,
             Instruction::PointerDecrement => self.pointer -= 1,
-            Instruction::Put => print!("{}", self.memory[self.pointer] as char),
+            Instruction::Put => print!("{}", (self.memory[self.pointer] as u8) as char),
+
             Instruction::GetChar => {
-                input!{
-                    n: u8,
+                input! {
+                    n: i32,
                 }
                 self.memory[self.pointer] = n;
-            },
+            }
 
             Instruction::Begin => {
-                match self.memory[self.pointer]{
+                match self.memory[self.pointer] {
                     0 => {
                         let mut loop_counter = 1;
-                        while loop_counter > 0{
+                        while loop_counter != 0 {
                             self.index += 1;
-                            match self.instructions[self.index]{
+                            match self.instructions[self.index] {
                                 Instruction::Begin => loop_counter += 1,
                                 Instruction::End => loop_counter -= 1,
                                 _ => (),
@@ -153,40 +152,68 @@ impl Interpreter{
                     }
                     _ => ()
                 }
-            },
+            }
 
             Instruction::End => {
-                match self.memory[self.pointer]{
-                    0=> (),
+                match self.memory[self.pointer] {
+                    0 => (),
                     _ => {
                         let mut loop_counter = 1;
-                        while loop_counter > 0{
+                        while loop_counter > 0 {
                             self.index -= 1;
-                            match self.instructions[self.index]{
+                            match self.instructions[self.index] {
                                 Instruction::Begin => loop_counter -= 1,
                                 Instruction::End => loop_counter += 1,
                                 _ => (),
                             }
                         }
                     }
-
                 }
             }
 
             _ => (),
         }
     }
-
 }
 
 
-fn main() {
-    input!{
-        process: chars,
-    }
-    let a: String = process.into_iter().collect();
-    let mut inter = Interpreter::new(&a);
-    inter.run();
+fn read<T: std::str::FromStr>() -> T {
+    let mut s = String::new();
+    std::io::stdin().read_line(&mut s).ok();
+    s.trim().parse().ok().unwrap()
+}
 
+fn reads () -> String{
+    let mut process: String = String::new();
+
+    loop{
+
+        let a: String = read();
+        let b: &str = &a;
+        match b{
+            "end" => break,
+            _ => process += &b,
+        }
+    }
+    process
+}
+fn main() {
+    println!();
+    println!("Welcome to BrainF**k Interpreter with Rust!");
+    println!("if your code is finished, Please enter 'end' nextLine.");
+    println!();
+    println!("Example)");
+    println!("        input) +++++++++[->++++++++>+++++++++++>+++++<<<]>.>++.+++++");
+    println!("               ++..+++.>-.------------.<++++++++.--------.+++.------.--------.>+.");
+    println!("               end");
+    println!("        output) Hello, world!");
+    println!();
+    println!("Please enter your code.");
+    let process:String = reads();
+    let mut inter = Interpreter::new(&process);
+    inter.run();
     println!();
 }
+
+
+
