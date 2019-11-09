@@ -137,45 +137,40 @@ impl Interpreter {
                 self.memory[self.pointer] = n;
             }
 
-            Instruction::Begin => {
-                match self.memory[self.pointer] {
-                    0 => {
-                        let mut loop_counter = 1;
-                        while loop_counter != 0 {
-                            self.index += 1;
-                            match self.instructions[self.index] {
-                                Instruction::Begin => loop_counter += 1,
-                                Instruction::End => loop_counter -= 1,
-                                _ => (),
-                            }
+            Instruction::Begin => match self.memory[self.pointer] {
+                0 => {
+                    let mut loop_counter = 1;
+                    while loop_counter != 0 {
+                        self.index += 1;
+                        match self.instructions[self.index] {
+                            Instruction::Begin => loop_counter += 1,
+                            Instruction::End => loop_counter -= 1,
+                            _ => (),
                         }
                     }
-                    _ => ()
                 }
-            }
+                _ => (),
+            },
 
-            Instruction::End => {
-                match self.memory[self.pointer] {
-                    0 => (),
-                    _ => {
-                        let mut loop_counter = 1;
-                        while loop_counter > 0 {
-                            self.index -= 1;
-                            match self.instructions[self.index] {
-                                Instruction::Begin => loop_counter -= 1,
-                                Instruction::End => loop_counter += 1,
-                                _ => (),
-                            }
+            Instruction::End => match self.memory[self.pointer] {
+                0 => (),
+                _ => {
+                    let mut loop_counter = 1;
+                    while loop_counter > 0 {
+                        self.index -= 1;
+                        match self.instructions[self.index] {
+                            Instruction::Begin => loop_counter -= 1,
+                            Instruction::End => loop_counter += 1,
+                            _ => (),
                         }
                     }
                 }
-            }
+            },
 
             _ => (),
         }
     }
 }
-
 
 fn read<T: std::str::FromStr>() -> T {
     let mut s = String::new();
@@ -183,14 +178,15 @@ fn read<T: std::str::FromStr>() -> T {
     s.trim().parse().ok().unwrap()
 }
 
-fn reads () -> String{
+fn reads() -> String {
     let mut process: String = String::new();
 
-    loop{
+    print!(">> ");
 
+    loop {
         let a: String = read();
         let b: &str = &a;
-        match b{
+        match b {
             "end" => break,
             _ => process += &b,
         }
@@ -209,11 +205,10 @@ fn main() {
     println!("        output) Hello, world!");
     println!();
     println!("Please enter your code.");
-    let process:String = reads();
+    let process: String = reads();
+    let _a: Vec<char> = process.chars().collect();
+
     let mut inter = Interpreter::new(&process);
     inter.run();
     println!();
 }
-
-
-
